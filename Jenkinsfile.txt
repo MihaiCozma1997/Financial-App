@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    environment {
+        MAVEN_OPTS = "-Dmaven.repo.local=.m2/repository"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Cloning repository...'
+                checkout scm
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building with Maven...'
+                sh 'mvn clean install'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Running tests...'
+                sh 'mvn test'
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo 'Packaging the app...'
+                sh 'mvn package'
+            }
+        }
+
+        stage('Archive Artifacts') {
+            steps {
+                echo 'Archiving build output...'
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'Build completed successfully!'
+        }
+        failure {
+            echo 'Build failed.'
+        }
+    }
+}
